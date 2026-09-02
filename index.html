@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Transparent QR Code Generator</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="app">
+    <header class="app__header">
+      <h1>Transparent QR Code Generator</h1>
+      <p>Create a transparent QR code from any URL &mdash; perfect for business cards.</p>
+    </header>
+
+    <div class="layout">
+      <section class="controls" aria-label="QR code settings">
+        <label class="field">
+          <span class="field__label">URL or text</span>
+          <input
+            id="text"
+            type="text"
+            inputmode="url"
+            placeholder="https://www.linkedin.com/in/your-profile"
+            value="https://www.linkedin.com/in/your-profile"
+            autocomplete="off"
+            spellcheck="false"
+          />
+        </label>
+
+        <div class="field-row">
+          <label class="field">
+            <span class="field__label">Foreground color</span>
+            <span class="color-input">
+              <input id="fgColor" type="color" value="#000000" />
+              <input id="fgColorHex" type="text" value="#000000" spellcheck="false" />
+            </span>
+          </label>
+
+          <label class="field field--checkbox">
+            <input id="transparentBg" type="checkbox" checked />
+            <span>Transparent background</span>
+          </label>
+        </div>
+
+        <label class="field" id="bgColorField" hidden>
+          <span class="field__label">Background color</span>
+          <span class="color-input">
+            <input id="bgColor" type="color" value="#ffffff" />
+            <input id="bgColorHex" type="text" value="#ffffff" spellcheck="false" />
+          </span>
+        </label>
+
+        <div class="field-row">
+          <label class="field">
+            <span class="field__label">
+              Error correction
+              <span class="hint" title="Higher levels stay scannable even if part of the code is covered by a logo or damaged.">?</span>
+            </span>
+            <select id="ecLevel">
+              <option value="L">Low (7%)</option>
+              <option value="M" selected>Medium (15%)</option>
+              <option value="Q">Quartile (25%)</option>
+              <option value="H">High (30%)</option>
+            </select>
+          </label>
+
+          <label class="field">
+            <span class="field__label">
+              Quiet zone
+              <span class="hint" title="Empty margin around the code. A margin of 4 is recommended for reliable scanning.">?</span>
+            </span>
+            <input id="margin" type="number" min="0" max="16" step="1" value="4" />
+          </label>
+        </div>
+
+        <label class="field">
+          <span class="field__label">
+            PNG size <output id="sizeValue">1024</output> px
+          </span>
+          <input id="size" type="range" min="256" max="4096" step="64" value="1024" />
+        </label>
+
+        <div class="actions">
+          <button id="downloadPng" type="button" class="btn btn--primary">Download PNG</button>
+          <button id="downloadSvg" type="button" class="btn">Download SVG</button>
+          <button id="copyPng" type="button" class="btn">Copy image</button>
+        </div>
+
+        <p id="status" class="status" role="status" aria-live="polite"></p>
+      </section>
+
+      <section class="preview" aria-label="QR code preview">
+        <div class="preview__canvas-wrap" id="previewWrap">
+          <canvas id="canvas" width="300" height="300"></canvas>
+        </div>
+        <p class="preview__note">The checkered area shows where the background is transparent.</p>
+      </section>
+    </div>
+  </main>
+
+  <script src="vendor/qrcode.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
