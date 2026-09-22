@@ -215,6 +215,22 @@ input[type="range"] {
   color: #4ade80;
 }
 
+.tip {
+  margin: 1rem 0 0;
+  padding: 0.7rem 0.85rem;
+  font-size: 0.8rem;
+  line-height: 1.4;
+  color: var(--muted);
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent-strong);
+  border-radius: 8px;
+}
+
+.tip strong {
+  color: var(--text);
+}
+
 .preview {
   position: sticky;
   top: 1rem;

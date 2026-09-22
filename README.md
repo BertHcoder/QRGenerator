@@ -20,6 +20,19 @@ A small, self-contained web tool to generate **transparent QR codes** from any U
 - If you'll place a logo over the center, raise **Error correction** to **High (30%)**.
 - Test the printed code with a phone camera before ordering a batch.
 
+## Keeping the background transparent when sharing
+
+A downloaded PNG really is transparent, but transparency can be lost **after** you send it:
+email clients and chat apps (Messenger, WhatsApp, etc.) often re-compress inline photos to
+JPEG, which has no transparency and gets flattened onto a solid (often white or black) background.
+
+To preserve transparency:
+
+- Send the file as an **attachment / document**, not as an inline **photo**.
+- In email, **attach** the file rather than pasting it into the message body.
+- Prefer the **SVG** export when the recipient will drop it into a design tool.
+- Don't screenshot the code &mdash; screenshots are always opaque.
+
 ## Notes
 
 - The QR engine ([`qrcode`](https://www.npmjs.com/package/qrcode)) is bundled locally in
