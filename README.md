@@ -20,7 +20,8 @@ Free to use, open source, and hosted on Cloudflare. If it helps you, you can
 
 - Prefer the **SVG** export for print &mdash; it stays crisp at any size.
 - Keep the **Quiet zone** at 4 (or more) so scanners read it reliably.
-- If you'll place a logo over the center, raise **Error correction** to **High (30%)**.
+- Use **Center icon** to add a LinkedIn, Instagram, X, etc. logo; error correction is
+  automatically raised to Quartile/High so the code still scans.
 - Test the printed code with a phone camera before ordering a batch.
 
 ## Keeping the background transparent when sharing

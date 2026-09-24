@@ -23,11 +23,27 @@
             type="text"
             inputmode="url"
             placeholder="https://www.linkedin.com/in/your-profile"
-            value="https://www.linkedin.com/in/your-profile"
             autocomplete="off"
             spellcheck="false"
           />
         </label>
+
+        <div class="field-row">
+          <label class="field">
+            <span class="field__label">
+              Center icon
+              <span class="hint" title="Adds an icon in the middle. Error correction is raised to Quartile/High so the code still scans.">?</span>
+            </span>
+            <select id="icon">
+              <option value="">None</option>
+            </select>
+          </label>
+
+          <label class="field field--checkbox" id="brandColorField" hidden>
+            <input id="brandColor" type="checkbox" checked />
+            <span>Brand colors</span>
+          </label>
+        </div>
 
         <div class="field-row">
           <label class="field">
