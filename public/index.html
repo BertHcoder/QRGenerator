@@ -17,16 +17,180 @@
     <div class="layout">
       <section class="controls" aria-label="QR code settings">
         <label class="field">
-          <span class="field__label">URL or text</span>
-          <input
-            id="text"
-            type="text"
-            inputmode="url"
-            placeholder="https://www.linkedin.com/in/your-profile"
-            autocomplete="off"
-            spellcheck="false"
-          />
+          <span class="field__label">
+            Content type
+            <span class="hint" title="Structured types open the right app when scanned: compose an email, dial a number, join Wi-Fi, save a contact&hellip;">?</span>
+          </span>
+          <select id="payloadType">
+            <option value="text" selected>URL or text</option>
+            <option value="email">Email</option>
+            <option value="phone">Phone call</option>
+            <option value="sms">SMS</option>
+            <option value="wifi">Wi-Fi network</option>
+            <option value="contact">Contact card (vCard)</option>
+            <option value="location">Location</option>
+            <option value="event">Calendar event</option>
+          </select>
         </label>
+
+        <div id="payloadFields">
+          <div class="payload" data-type="text">
+            <label class="field">
+              <span class="field__label">URL or text</span>
+              <input
+                id="text"
+                type="text"
+                inputmode="url"
+                placeholder="https://www.linkedin.com/in/your-profile"
+                autocomplete="off"
+                spellcheck="false"
+              />
+            </label>
+          </div>
+
+          <div class="payload" data-type="email" hidden>
+            <label class="field">
+              <span class="field__label">Email address</span>
+              <input id="emailTo" type="email" placeholder="name@example.com" autocomplete="off" spellcheck="false" />
+            </label>
+            <label class="field">
+              <span class="field__label">Subject (optional)</span>
+              <input id="emailSubject" type="text" autocomplete="off" />
+            </label>
+            <label class="field">
+              <span class="field__label">Message (optional)</span>
+              <textarea id="emailBody" rows="3"></textarea>
+            </label>
+          </div>
+
+          <div class="payload" data-type="phone" hidden>
+            <label class="field">
+              <span class="field__label">Phone number</span>
+              <input id="phoneNumber" type="tel" placeholder="+32 470 12 34 56" autocomplete="off" />
+            </label>
+          </div>
+
+          <div class="payload" data-type="sms" hidden>
+            <label class="field">
+              <span class="field__label">Phone number</span>
+              <input id="smsNumber" type="tel" placeholder="+32 470 12 34 56" autocomplete="off" />
+            </label>
+            <label class="field">
+              <span class="field__label">Message (optional)</span>
+              <textarea id="smsMessage" rows="3"></textarea>
+            </label>
+          </div>
+
+          <div class="payload" data-type="wifi" hidden>
+            <label class="field">
+              <span class="field__label">Network name (SSID)</span>
+              <input id="wifiSsid" type="text" autocomplete="off" spellcheck="false" />
+            </label>
+            <div class="field-row">
+              <label class="field">
+                <span class="field__label">Security</span>
+                <select id="wifiSecurity">
+                  <option value="WPA" selected>WPA/WPA2/WPA3</option>
+                  <option value="WEP">WEP</option>
+                  <option value="nopass">None (open)</option>
+                </select>
+              </label>
+              <label class="field field--checkbox">
+                <input id="wifiHidden" type="checkbox" />
+                <span>Hidden network</span>
+              </label>
+            </div>
+            <label class="field" id="wifiPasswordField">
+              <span class="field__label">
+                Password
+                <span class="hint" title="The password is never saved on this device.">?</span>
+              </span>
+              <input id="wifiPassword" type="text" autocomplete="off" spellcheck="false" data-no-store />
+            </label>
+          </div>
+
+          <div class="payload" data-type="contact" hidden>
+            <div class="field-row">
+              <label class="field">
+                <span class="field__label">First name</span>
+                <input id="contactFirst" type="text" autocomplete="off" />
+              </label>
+              <label class="field">
+                <span class="field__label">Last name</span>
+                <input id="contactLast" type="text" autocomplete="off" />
+              </label>
+            </div>
+            <div class="field-row">
+              <label class="field">
+                <span class="field__label">Company</span>
+                <input id="contactOrg" type="text" autocomplete="off" />
+              </label>
+              <label class="field">
+                <span class="field__label">Job title</span>
+                <input id="contactTitle" type="text" autocomplete="off" />
+              </label>
+            </div>
+            <div class="field-row">
+              <label class="field">
+                <span class="field__label">Phone</span>
+                <input id="contactPhone" type="tel" autocomplete="off" />
+              </label>
+              <label class="field">
+                <span class="field__label">Email</span>
+                <input id="contactEmail" type="email" autocomplete="off" spellcheck="false" />
+              </label>
+            </div>
+            <label class="field">
+              <span class="field__label">Website</span>
+              <input id="contactUrl" type="text" inputmode="url" placeholder="https://" autocomplete="off" spellcheck="false" />
+            </label>
+            <label class="field">
+              <span class="field__label">Address</span>
+              <input id="contactAddress" type="text" autocomplete="off" />
+            </label>
+          </div>
+
+          <div class="payload" data-type="location" hidden>
+            <div class="field-row">
+              <label class="field">
+                <span class="field__label">
+                  Latitude
+                  <span class="hint" title="You can paste &quot;lat, lng&quot; copied from Google Maps (right-click a spot) straight into this field.">?</span>
+                </span>
+                <input id="geoLat" type="text" inputmode="decimal" placeholder="51.0543" autocomplete="off" />
+              </label>
+              <label class="field">
+                <span class="field__label">Longitude</span>
+                <input id="geoLng" type="text" inputmode="decimal" placeholder="3.7174" autocomplete="off" />
+              </label>
+            </div>
+          </div>
+
+          <div class="payload" data-type="event" hidden>
+            <label class="field">
+              <span class="field__label">Title</span>
+              <input id="eventTitle" type="text" autocomplete="off" />
+            </label>
+            <div class="field-row">
+              <label class="field">
+                <span class="field__label">Start</span>
+                <input id="eventStart" type="datetime-local" />
+              </label>
+              <label class="field">
+                <span class="field__label">End (optional)</span>
+                <input id="eventEnd" type="datetime-local" />
+              </label>
+            </div>
+            <label class="field">
+              <span class="field__label">Location (optional)</span>
+              <input id="eventLocation" type="text" autocomplete="off" />
+            </label>
+            <label class="field">
+              <span class="field__label">Description (optional)</span>
+              <textarea id="eventDescription" rows="3"></textarea>
+            </label>
+          </div>
+        </div>
 
         <div class="field-row">
           <label class="field">

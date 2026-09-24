@@ -2,6 +2,10 @@
 
 (function () {
   const els = {
+    payloadType: document.getElementById("payloadType"),
+    payloadFields: document.getElementById("payloadFields"),
+    wifiSecurity: document.getElementById("wifiSecurity"),
+    wifiPasswordField: document.getElementById("wifiPasswordField"),
     text: document.getElementById("text"),
     icon: document.getElementById("icon"),
     brandColorField: document.getElementById("brandColorField"),
@@ -30,6 +34,7 @@
   const STORAGE_KEY = "qrgenerator:settings";
   // Element id -> property holding its persisted value.
   const SETTINGS_FIELDS = {
+    payloadType: "value",
     text: "value",
     icon: "value",
     brandColor: "checked",
@@ -127,6 +132,151 @@
       ).toLowerCase();
     }
     return fallback;
+  }
+
+  const val = (id) => document.getElementById(id).value.trim();
+  const phoneDigits = (v) => v.replace(/[^\d+]/g, "");
+  const escWifi = (v) => v.replace(/([\\;,:"])/g, "\\$1");
+  const escCard = (v) => v.replace(/([\\;,])/g, "\\$1").replace(/\r?\n/g, "\\n");
+
+  function icalDate(v) {
+    const d = new Date(v);
+    return isNaN(d) ? "" : d.toISOString().replace(/[-:]|\.\d{3}/g, "");
+  }
+
+  // hint: shown while required fields are empty; name: field used for the download filename.
+  const PAYLOADS = {
+    text: {
+      hint: "Enter a URL or text",
+      name: "text",
+      build: () => val("text"),
+    },
+    email: {
+      hint: "Enter an email address",
+      name: "emailTo",
+      build() {
+        const to = val("emailTo").replace(/\s+/g, "");
+        if (!to) return "";
+        const query = [["subject", val("emailSubject")], ["body", val("emailBody")]]
+          .filter((p) => p[1])
+          .map((p) => p[0] + "=" + encodeURIComponent(p[1]));
+        return "mailto:" + to + (query.length ? "?" + query.join("&") : "");
+      },
+    },
+    phone: {
+      hint: "Enter a phone number",
+      name: "phoneNumber",
+      build() {
+        const n = phoneDigits(val("phoneNumber"));
+        return n ? "tel:" + n : "";
+      },
+    },
+    sms: {
+      hint: "Enter a phone number",
+      name: "smsNumber",
+      build() {
+        const n = phoneDigits(val("smsNumber"));
+        return n ? `SMSTO:${n}:${val("smsMessage")}` : "";
+      },
+    },
+    wifi: {
+      hint: "Enter the network name (SSID)",
+      name: "wifiSsid",
+      build() {
+        const ssid = document.getElementById("wifiSsid").value;
+        if (!ssid.trim()) return "";
+        const sec = els.wifiSecurity.value;
+        let s = `WIFI:T:${sec};S:${escWifi(ssid)};`;
+        if (sec !== "nopass") {
+          s += `P:${escWifi(document.getElementById("wifiPassword").value)};`;
+        }
+        if (document.getElementById("wifiHidden").checked) s += "H:true;";
+        return s + ";";
+      },
+    },
+    contact: {
+      hint: "Enter a name",
+      name: "contactFirst",
+      build() {
+        const first = val("contactFirst");
+        const last = val("contactLast");
+        if (!first && !last) return "";
+        const lines = [
+          "BEGIN:VCARD",
+          "VERSION:3.0",
+          `N:${escCard(last)};${escCard(first)};;;`,
+          `FN:${escCard([first, last].filter(Boolean).join(" "))}`,
+        ];
+        [
+          ["ORG", "contactOrg"],
+          ["TITLE", "contactTitle"],
+          ["TEL;TYPE=CELL", "contactPhone"],
+          ["EMAIL", "contactEmail"],
+        ].forEach(function (pair) {
+          const v = val(pair[1]);
+          if (v) lines.push(`${pair[0]}:${escCard(v)}`);
+        });
+        const url = val("contactUrl");
+        if (url) lines.push(`URL:${url}`);
+        const adr = val("contactAddress");
+        if (adr) lines.push(`ADR;TYPE=WORK:;;${escCard(adr)};;;;`);
+        lines.push("END:VCARD");
+        return lines.join("\r\n");
+      },
+    },
+    location: {
+      hint: "Enter a valid latitude and longitude",
+      name: "geoLat",
+      build() {
+        let latRaw = val("geoLat");
+        let lngRaw = val("geoLng");
+        const pasted = latRaw.match(/^(-?[\d.]+)\s*,\s*(-?[\d.]+)$/);
+        if (pasted) {
+          latRaw = pasted[1];
+          lngRaw = pasted[2];
+        }
+        const lat = Number(latRaw);
+        const lng = Number(lngRaw);
+        if (!latRaw || !lngRaw || !(Math.abs(lat) <= 90 && Math.abs(lng) <= 180)) {
+          return "";
+        }
+        return `geo:${lat},${lng}`;
+      },
+    },
+    event: {
+      hint: "Enter a title and start time",
+      name: "eventTitle",
+      build() {
+        const title = val("eventTitle");
+        const start = icalDate(val("eventStart"));
+        if (!title || !start) return "";
+        const lines = ["BEGIN:VEVENT", `SUMMARY:${escCard(title)}`, `DTSTART:${start}`];
+        const end = icalDate(val("eventEnd"));
+        if (end) lines.push(`DTEND:${end}`);
+        const loc = val("eventLocation");
+        if (loc) lines.push(`LOCATION:${escCard(loc)}`);
+        const desc = val("eventDescription");
+        if (desc) lines.push(`DESCRIPTION:${escCard(desc)}`);
+        lines.push("END:VEVENT");
+        return lines.join("\r\n");
+      },
+    },
+  };
+
+  function currentPayload() {
+    return PAYLOADS[els.payloadType.value] || PAYLOADS.text;
+  }
+
+  function payloadText() {
+    return currentPayload().build();
+  }
+
+  function syncPayloadType() {
+    const type = els.payloadType.value;
+    els.payloadFields.querySelectorAll(".payload").forEach(function (group) {
+      group.hidden = group.dataset.type !== type;
+    });
+    els.wifiPasswordField.hidden = els.wifiSecurity.value === "nopass";
   }
 
   function currentOptions() {
@@ -258,12 +408,12 @@
       return;
     }
 
-    const text = els.text.value.trim();
+    const text = payloadText();
     const seq = ++renderSeq;
     if (!text) {
       const ctx = els.canvas.getContext("2d");
       ctx.clearRect(0, 0, els.canvas.width, els.canvas.height);
-      setStatus("Enter a URL or text to generate a QR code.");
+      setStatus(currentPayload().hint + " to generate a QR code.");
       return;
     }
 
@@ -297,7 +447,8 @@
   }
 
   function safeFilename() {
-    const raw = els.text.value.trim() || "qr-code";
+    const type = els.payloadType.value;
+    const raw = (type === "text" ? "" : type + "-") + val(currentPayload().name);
     const cleaned = raw
       .replace(/^https?:\/\//i, "")
       .replace(/[^a-z0-9]+/gi, "-")
@@ -309,9 +460,9 @@
 
   function downloadPng() {
     if (!libraryReady()) return;
-    const text = els.text.value.trim();
+    const text = payloadText();
     if (!text) {
-      setStatus("Enter a URL or text first.", "error");
+      setStatus(currentPayload().hint + " first.", "error");
       return;
     }
     const size = parseInt(els.size.value, 10) || 1024;
@@ -329,9 +480,9 @@
 
   function downloadSvg() {
     if (!libraryReady()) return;
-    const text = els.text.value.trim();
+    const text = payloadText();
     if (!text) {
-      setStatus("Enter a URL or text first.", "error");
+      setStatus(currentPayload().hint + " first.", "error");
       return;
     }
     const options = currentOptions();
@@ -360,9 +511,9 @@
       setStatus("Copying images is not supported in this browser.", "error");
       return;
     }
-    const text = els.text.value.trim();
+    const text = payloadText();
     if (!text) {
-      setStatus("Enter a URL or text first.", "error");
+      setStatus(currentPayload().hint + " first.", "error");
       return;
     }
     const size = parseInt(els.size.value, 10) || 1024;
@@ -424,8 +575,14 @@
     els.sizeValue.textContent = els.size.value;
   });
 
+  els.payloadType.addEventListener("change", function () {
+    syncPayloadType();
+    scheduleRender();
+  });
+  els.wifiSecurity.addEventListener("change", syncPayloadType);
+
   ["input", "change"].forEach((evt) => {
-    els.text.addEventListener(evt, scheduleRender);
+    els.payloadFields.addEventListener(evt, scheduleRender);
     els.ecLevel.addEventListener(evt, scheduleRender);
     els.margin.addEventListener(evt, scheduleRender);
   });
@@ -434,10 +591,20 @@
   els.downloadSvg.addEventListener("click", downloadSvg);
   els.copyPng.addEventListener("click", copyPng);
 
+  // Structured payload inputs, excluding the plain text field and secrets like the Wi-Fi password.
+  function storedPayloadInputs() {
+    return Array.from(
+      els.payloadFields.querySelectorAll("input, textarea, select")
+    ).filter((el) => el.id !== "text" && !el.hasAttribute("data-no-store"));
+  }
+
   function readSettings() {
-    const s = {};
+    const s = { fields: {} };
     Object.keys(SETTINGS_FIELDS).forEach(function (key) {
       s[key] = els[key][SETTINGS_FIELDS[key]];
+    });
+    storedPayloadInputs().forEach(function (el) {
+      s.fields[el.id] = el.type === "checkbox" ? el.checked : el.value;
     });
     return s;
   }
@@ -447,6 +614,14 @@
       const prop = SETTINGS_FIELDS[key];
       if (typeof s[key] === typeof DEFAULTS[key]) els[key][prop] = s[key];
     });
+    const fields = s.fields && typeof s.fields === "object" ? s.fields : {};
+    storedPayloadInputs().forEach(function (el) {
+      const fallback = DEFAULTS.fields[el.id];
+      if (typeof fields[el.id] !== typeof fallback) return;
+      el[el.type === "checkbox" ? "checked" : "value"] = fields[el.id];
+      if (el.tagName === "SELECT" && el.selectedIndex < 0) el.value = fallback;
+    });
+    if (els.payloadType.selectedIndex < 0) els.payloadType.value = DEFAULTS.payloadType;
     if (els.icon.selectedIndex < 0) els.icon.value = DEFAULTS.icon;
     if (els.ecLevel.selectedIndex < 0) els.ecLevel.value = DEFAULTS.ecLevel;
     els.fgColorHex.value = normalizeHex(els.fgColorHex.value, DEFAULTS.fgColorHex);
@@ -456,6 +631,7 @@
     els.bgColorField.hidden = els.transparentBg.checked;
     els.sizeValue.textContent = els.size.value;
     syncEcLevel();
+    syncPayloadType();
   }
 
   // localStorage can throw (private mode, storage disabled); settings are best-effort.
@@ -493,7 +669,14 @@
   els.controls.addEventListener("change", saveSettings);
 
   els.resetSettings.addEventListener("click", function () {
-    applySettings(Object.assign({}, DEFAULTS, { text: els.text.value }));
+    const content = readSettings();
+    applySettings(
+      Object.assign({}, DEFAULTS, {
+        payloadType: content.payloadType,
+        text: content.text,
+        fields: content.fields,
+      })
+    );
     saveSettings();
     render();
   });
