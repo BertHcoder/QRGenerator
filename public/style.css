@@ -204,6 +204,24 @@ input[type="range"] {
   background: var(--accent);
 }
 
+.settings {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  margin-top: 0.9rem;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.btn--small {
+  flex: 0 0 auto;
+  min-width: 0;
+  padding: 0.4rem 0.75rem;
+  font-size: 0.8rem;
+}
+
 .status {
   min-height: 1.2rem;
   margin: 0.75rem 0 0;

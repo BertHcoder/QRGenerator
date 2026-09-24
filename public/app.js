@@ -20,10 +20,26 @@
     downloadPng: document.getElementById("downloadPng"),
     downloadSvg: document.getElementById("downloadSvg"),
     copyPng: document.getElementById("copyPng"),
+    remember: document.getElementById("remember"),
+    resetSettings: document.getElementById("resetSettings"),
+    controls: document.querySelector(".controls"),
     status: document.getElementById("status"),
   };
 
   const PREVIEW_SIZE = 640;
+  const STORAGE_KEY = "qrgenerator:settings";
+  // Element id -> property holding its persisted value.
+  const SETTINGS_FIELDS = {
+    text: "value",
+    icon: "value",
+    brandColor: "checked",
+    fgColorHex: "value",
+    transparentBg: "checked",
+    bgColorHex: "value",
+    ecLevel: "value",
+    margin: "value",
+    size: "value",
+  };
   let debounceTimer = null;
   let renderSeq = 0;
 
@@ -417,6 +433,70 @@
   els.downloadPng.addEventListener("click", downloadPng);
   els.downloadSvg.addEventListener("click", downloadSvg);
   els.copyPng.addEventListener("click", copyPng);
+
+  function readSettings() {
+    const s = {};
+    Object.keys(SETTINGS_FIELDS).forEach(function (key) {
+      s[key] = els[key][SETTINGS_FIELDS[key]];
+    });
+    return s;
+  }
+
+  function applySettings(s) {
+    Object.keys(SETTINGS_FIELDS).forEach(function (key) {
+      const prop = SETTINGS_FIELDS[key];
+      if (typeof s[key] === typeof DEFAULTS[key]) els[key][prop] = s[key];
+    });
+    if (els.icon.selectedIndex < 0) els.icon.value = DEFAULTS.icon;
+    if (els.ecLevel.selectedIndex < 0) els.ecLevel.value = DEFAULTS.ecLevel;
+    els.fgColorHex.value = normalizeHex(els.fgColorHex.value, DEFAULTS.fgColorHex);
+    els.bgColorHex.value = normalizeHex(els.bgColorHex.value, DEFAULTS.bgColorHex);
+    els.fgColor.value = els.fgColorHex.value;
+    els.bgColor.value = els.bgColorHex.value;
+    els.bgColorField.hidden = els.transparentBg.checked;
+    els.sizeValue.textContent = els.size.value;
+    syncEcLevel();
+  }
+
+  // localStorage can throw (private mode, storage disabled); settings are best-effort.
+  function writeStorage(value) {
+    try {
+      if (value === null) localStorage.removeItem(STORAGE_KEY);
+      else localStorage.setItem(STORAGE_KEY, JSON.stringify(value));
+    } catch (e) {}
+  }
+
+  function loadSettings() {
+    let stored = null;
+    try {
+      stored = JSON.parse(localStorage.getItem(STORAGE_KEY));
+    } catch (e) {}
+    if (!stored || typeof stored !== "object") return;
+    if (stored.remember === false) {
+      els.remember.checked = false;
+      return;
+    }
+    applySettings(stored);
+  }
+
+  function saveSettings() {
+    if (els.remember.checked) writeStorage(readSettings());
+  }
+
+  const DEFAULTS = readSettings();
+  loadSettings();
+
+  els.remember.addEventListener("change", function () {
+    writeStorage(els.remember.checked ? readSettings() : { remember: false });
+  });
+  els.controls.addEventListener("input", saveSettings);
+  els.controls.addEventListener("change", saveSettings);
+
+  els.resetSettings.addEventListener("click", function () {
+    applySettings(Object.assign({}, DEFAULTS, { text: els.text.value }));
+    saveSettings();
+    render();
+  });
 
   // Initial render once the page (and CDN script) has loaded.
   window.addEventListener("load", render);
