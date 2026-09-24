@@ -264,3 +264,41 @@ input[type="range"] {
   font-size: 0.8rem;
   color: var(--muted);
 }
+
+.app__footer {
+  margin-top: 2rem;
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.app__footer p {
+  margin: 0 0 0.9rem;
+}
+
+.app__footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.6rem;
+  margin-bottom: 0.9rem;
+}
+
+.app__footer-links .btn {
+  flex: 0 1 auto;
+  text-decoration: none;
+}
+
+.btn--coffee {
+  background: #ffdd00;
+  border-color: #ffdd00;
+  color: #1f1f1f;
+}
+
+.btn--coffee:hover {
+  background: #ffe84d;
+}
+
+.app__footer-credit a {
+  color: var(--accent);
+}

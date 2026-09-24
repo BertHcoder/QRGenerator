@@ -3,9 +3,12 @@
 A small, self-contained web tool to generate **transparent QR codes** from any URL
 (such as a LinkedIn profile) so they can be placed on business cards, PDFs, or slides.
 
+Free to use, open source, and hosted on Cloudflare. If it helps you, you can
+[buy me a coffee](https://buymeacoffee.com/dirtymasterchief) &#9749;
+
 ## How to use
 
-1. Open `index.html` in any modern browser (double-click it).
+1. Open `public/index.html` in any modern browser (double-click it), or use the hosted site.
 2. Paste your URL (e.g. `https://www.linkedin.com/in/your-profile`).
 3. Pick a foreground color and keep **Transparent background** checked.
 4. Download:
@@ -36,5 +39,29 @@ To preserve transparency:
 ## Notes
 
 - The QR engine ([`qrcode`](https://www.npmjs.com/package/qrcode)) is bundled locally in
-  `vendor/qrcode.min.js`, so the tool works **fully offline** &mdash; no internet needed.
+  `public/vendor/qrcode.min.js`, so the tool works **fully offline** &mdash; no internet needed.
 - No data is uploaded; everything is generated locally in your browser.
+
+## Deploying to Cloudflare (free)
+
+The site is plain static files in `public/`, served as a Cloudflare Worker with
+[static assets](https://developers.cloudflare.com/workers/static-assets/) only &mdash; no
+Worker script, database or build step. Static asset requests are free and unlimited.
+
+**Option A &mdash; automatic deploys from GitHub (recommended)**
+
+1. Cloudflare dashboard &rarr; **Workers & Pages** &rarr; **Create** &rarr; **Import a repository**.
+2. Pick this repo. Leave the build command empty; deploy command: `npx wrangler deploy`.
+3. Every push to `main` now redeploys automatically.
+4. Optional: **Settings &rarr; Domains & Routes** &rarr; add a custom domain such as
+   `qr.itaanhuys.com`.
+
+**Option B &mdash; from your machine**
+
+```bash
+npm install
+npm run dev      # local preview at http://localhost:8787
+npm run deploy   # publishes to <name>.<your-subdomain>.workers.dev
+```
+
+Security headers (CSP etc.) are set in `public/_headers`.
